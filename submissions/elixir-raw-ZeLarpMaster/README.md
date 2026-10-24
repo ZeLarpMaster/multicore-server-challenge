@@ -48,7 +48,8 @@ All dependency versions and hashes are in `mix.lock`; `build.sh` runs `mix relea
   CPU was 17% idle.
 - **Separate read and write connections** (`DB_READ` and `DB_WRITE`, 5 and 16 on 8 cores; see "Tuning"): every
   commit waits for its WAL flush, and reads pipelined behind it would wait too.
-- **Batched reads**: each connection has one round in flight (`DB_DEPTH`). Requests that arrive meanwhile wait, and
+- **Batched reads** (the pattern of rust-tokio-Scooter1337 and csharp-sockets-jh-d, which Postgrex's one statement per
+  checkout can't do): each connection has one round in flight (`DB_DEPTH`). Requests that arrive meanwhile wait, and
   go out together as the next round, where single-statement requests for the same hot read become one execution
   of its batched variant: `SELECT r.i, x.* FROM unnest($1::int8[], ...) WITH ORDINALITY AS r(p1, ..., i) CROSS JOIN
   LATERAL (<the statement, $k -> r.pk>) x`. These are generated at startup from the statements and the parameter
